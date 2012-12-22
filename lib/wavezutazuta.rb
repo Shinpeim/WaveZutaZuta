@@ -1,6 +1,39 @@
 # -*- coding: utf-8 -*-
 require "hashie"
 module WaveZutaZuta
+  class Sampler
+    def initialize(pcm_meta, bpm)
+      @pcm_meta = pcm_meta
+      @bpm = bpm
+      @sounds = {}
+      @pcm_body = ""
+    end
+
+    def set_sound(key, pcm_data)
+      @sounds[key] = pcm_data
+    end
+
+    def bytes_for_1_64_note
+      @bytes_for_1_64_note ||= lambda {
+        seconds_of_quater_note = 60.0 / @bpm.to_f
+        seconds_of_1_64_note = seconds_of_quater_note / 16.0
+        bits_for_1_64_note = @pcm_meta.bitswidth * @pcm_meta.samplerate * seconds_of_1_64_note * @pcm_meta.channels
+        bytes_for_1_64_note = bits_for_1_64_note / 8
+      }.call
+    end
+
+    # size は 64分音符いくつ分ならすか
+    def play_sound(key, size)
+      bytes = bytes_for_1_64_note * size
+      pcm = @sounds[key][0..(bytes - 1)]
+      @pcm_body << pcm
+    end
+    def play_rest(size)
+      bytes = bytes_for_1_64_note * size
+      pcm = Array.new(bytes){0}.pack("C*")
+      @pcm_body << pcm
+    end
+  end
 
   class Wave
     class NotWaveData < StandardError; end
