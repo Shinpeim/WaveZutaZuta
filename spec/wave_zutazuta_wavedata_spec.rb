@@ -30,6 +30,9 @@ describe WaveZutaZuta::Wave do
         it "サイズが 44100(samplerate) * 16(bitwidth) * 2(channel) / 8 bytesであること" do
           wave_data.slice(30, 1).length.should == 44100 * 16 * 2 / 8
         end
+        it "ASCII-8BITとして扱われていること" do
+          wave_data.slice(30, 1).encoding.should == Encoding.find("ASCII-8BIT")
+        end
         it "30秒目から1秒間のPCMデータをスライスしたデータと内容が一致すること" do
           path = File.join(spec_dir, "resouces", "sliced_pcm.pcm")
           wave_data.slice(30, 1).should ==
