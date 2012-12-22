@@ -7,8 +7,8 @@ wave_file = ARGV.shift or raise "usage zutazuta.rb source_file.wav > dest_file.w
 sound_slots = %W{0 1 2 3 4 5 6 7 8 9 a b c d e f}
 
 rythm_pattern = [
-  :sound,:tie,:tie,:tie,   :tie ,:tie,:tie ,:tie,   :tie ,:tie ,:tie ,:tie , :rest,:rest,:rest,:rest,
-  :sound,:tie,:tie,:tie,  :sound,:tie,:tie,:tie, :rest,:rest,:rest,:rest, :sound,:tie,:tie,:tie,
+  :sound,:tie,:tie,:tie,  :tie ,:tie,:tie,:tie,   :tie,:tie,:tie,:tie,      :rest,:rest,:rest,:rest,
+  :sound,:tie,:tie,:tie,  :sound,:tie,:tie,:tie,  :rest,:rest,:rest,:rest,  :sound,:tie,:tie,:tie,
 ] * 16
 
 wave = WaveZutaZuta::Wave.new(wave_file)
@@ -24,8 +24,10 @@ play_info = rythm_pattern.reduce([]) do |result, item|
     result[-1][:length] += 1
   when :rest
     result.push({:type => :rest, :length => 1})
-  else
+  when :sound
     result.push({:type => :sound, :length => 1})
+  else
+    raise "invalid rythm pattern"
   end
   result
 end
