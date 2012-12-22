@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 $LOAD_PATH.push(File.join(File.dirname(File.dirname(__FILE__)), 'lib'))
+require "base64"
 require "wavezutazuta.rb"
 spec_dir = File.dirname(__FILE__)
 
@@ -9,7 +10,8 @@ describe WaveZutaZuta::Sampler do
 
   context "sound に1秒間のリニアPCMデータをセットしたとき" do
     before do
-      sampler.set_sound(:sound_1, IO.read(File.join(spec_dir, "resouces", "sliced_pcm.pcm")))
+      path = File.join(spec_dir, "resouces", "sliced_pcm.pcm")
+      sampler.set_sound(:sound_1, IO.read(path, File.stat(path).size))
     end
     context "soundを4分音符鳴らしたとき" do
       before do
@@ -24,6 +26,12 @@ describe WaveZutaZuta::Sampler do
         end
         it "pcm_bodyのサイズが1秒分のサイズであること" do
           sampler.instance_variable_get(:"@pcm_body").size.should == 176400
+        end
+        context "waveとして見たとき" do
+          it "waveデータが期待したものであること" do
+            path = File.join(spec_dir, "resouces", "zutazuta.wav")
+            Base64.encode64(sampler.to_wave).should == Base64.encode64(IO.read(path, File.stat(path).size))
+          end
         end
       end
     end

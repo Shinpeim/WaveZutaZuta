@@ -6,7 +6,7 @@ module WaveZutaZuta
       @pcm_meta = pcm_meta
       @bpm = bpm
       @sounds = {}
-      @pcm_body = ""
+      @pcm_body = "".encode("ASCII-8BIT")
     end
 
     def set_sound(key, pcm_data)
@@ -17,8 +17,8 @@ module WaveZutaZuta
       @bytes_for_1_64_note ||= lambda {
         seconds_of_quater_note = 60.0 / @bpm.to_f
         seconds_of_1_64_note = seconds_of_quater_note / 16.0
-        bits_for_1_64_note = @pcm_meta.bitswidth * @pcm_meta.samplerate * seconds_of_1_64_note * @pcm_meta.channels
-        bytes_for_1_64_note = bits_for_1_64_note / 8
+        bits_for_1_64_note = @pcm_meta.bitswidth * @pcm_meta.samplerate * @pcm_meta.channels * seconds_of_1_64_note
+        bytes_for_1_64_note = bits_for_1_64_note / 8.0
       }.call
     end
 
@@ -27,11 +27,44 @@ module WaveZutaZuta
       bytes = bytes_for_1_64_note * size
       pcm = @sounds[key][0..(bytes - 1)]
       @pcm_body << pcm
+      self
     end
     def play_rest(size)
       bytes = bytes_for_1_64_note * size
       pcm = Array.new(bytes){0}.pack("C*")
       @pcm_body << pcm
+      self
+    end
+
+    def to_wave
+      data_size = fmt_chunk.length + data_chunk.length + 4
+
+      wave_data = "RIFF".encode("ASCII-8BIT")
+      wave_data << [data_size].pack("L")
+      wave_data << "WAVE".encode("ASCII-8BIT")
+      wave_data << fmt_chunk
+      wave_data << data_chunk
+      wave_data.force_encoding("ASCII-8BIT")
+      wave_data
+    end
+
+    private
+    def fmt_chunk
+      fmt_chunk = "fmt ".encode("ASCII-8BIT")
+      fmt_chunk << [16].pack("L")
+      fmt_chunk << @pcm_meta.format
+      fmt_chunk << [@pcm_meta.channels].pack("S")
+      fmt_chunk << [@pcm_meta.samplerate].pack("L")
+      fmt_chunk << [@pcm_meta.bytepersec].pack("L")
+      fmt_chunk << [@pcm_meta.blockalign].pack("S")
+      fmt_chunk << [@pcm_meta.bitswidth].pack("S")
+      fmt_chunk
+    end
+    def data_chunk
+      @pcm_body.force_encoding("ASCII-8BIT")
+      data_chunk = "data".encode("ASCII-8BIT")
+      data_chunk << [@pcm_body.length].pack("L")
+      data_chunk << @pcm_body
     end
   end
 
