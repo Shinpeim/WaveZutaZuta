@@ -80,14 +80,19 @@ module WaveZutaZuta
     end
 
     def slice(from, length)
-      bytes_for_a_second = @pcm_meta.bitswidth * @pcm_meta.samplerate * @pcm_meta.channels / 8
-
       start_index = from * bytes_for_a_second
       index_length = length * bytes_for_a_second
       @pcm_body[start_index, index_length]
     end
 
+    def length
+      @pcm_body.length / bytes_for_a_second
+    end
+
     private
+    def bytes_for_a_second
+      @pcm_meta.bitswidth * @pcm_meta.samplerate * @pcm_meta.channels / 8
+    end
     def parse(f)
       riff_header = f.read(4)
       raise NotWaveData, "data is not RIFF format" unless riff_header == "RIFF"

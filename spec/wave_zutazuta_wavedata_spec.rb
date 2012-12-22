@@ -25,6 +25,9 @@ describe WaveZutaZuta::Wave do
     it "サンプリングレートが取得できること" do
       wave_data.pcm_meta.samplerate.should == 44100
     end
+    it "秒数を取得できること" do
+      wave_data.length.should == 205
+    end
     describe "#slice" do
       context "30秒目から1秒間のPCMデータをスライスしたとき" do
         it "サイズが 44100(samplerate) * 16(bitwidth) * 2(channel) / 8 bytesであること" do
