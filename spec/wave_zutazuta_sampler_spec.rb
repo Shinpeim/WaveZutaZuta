@@ -18,14 +18,16 @@ describe WaveZutaZuta::Sampler do
         sampler.play_sound(:sound_1, 16)
       end
       it "pcm_bodyのサイズが0.5秒分のサイズであること" do
-        sampler.instance_variable_get(:"@pcm_body").size.should == 88200
+        sampler.instance_variable_get(:"@pcm_body").size.
+          should be_within(wave.pcm_meta.bitswidth * wave.pcm_meta.channels).of(88200)
       end
       context "さらに休符を4分音符分鳴らしたとき" do
         before do
           sampler.play_rest(16)
         end
         it "pcm_bodyのサイズが1秒分のサイズであること" do
-          sampler.instance_variable_get(:"@pcm_body").size.should == 176400
+          sampler.instance_variable_get(:"@pcm_body").size.
+            should be_within(wave.pcm_meta.bitswidth * wave.pcm_meta.channels).of(176400)
         end
         context "waveとして見たとき" do
           it "waveデータが期待したものであること" do

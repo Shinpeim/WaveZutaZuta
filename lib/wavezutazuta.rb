@@ -7,6 +7,7 @@ module WaveZutaZuta
       @bpm = bpm
       @sounds = {}
       @pcm_body = "".encode("ASCII-8BIT")
+      @mod_handling_method = :add
     end
 
     def set_sound(key, pcm_data)
@@ -25,14 +26,20 @@ module WaveZutaZuta
     # size は 64分音符いくつ分ならすか
     def play_sound(key, size)
       bytes = bytes_for_1_64_note * size
-      pcm = @sounds[key][0..(bytes - 1)]
+      bytes = handle_mod(bytes)
+
+      pcm = @sounds[key][0,bytes]
       @pcm_body << pcm
+      @pcm_body.force_encoding("ASCII-8BIT")
       self
     end
     def play_rest(size)
       bytes = bytes_for_1_64_note * size
+      bytes = handle_mod(bytes)
+
       pcm = Array.new(bytes){0}.pack("C*")
       @pcm_body << pcm
+      @pcm_body.force_encoding("ASCII-8BIT")
       self
     end
 
@@ -49,6 +56,24 @@ module WaveZutaZuta
     end
 
     private
+    def handle_mod(bytes)
+      mod = bytes % (@pcm_meta.bitswidth * @pcm_meta.channels)
+      if @mod_handling_method == :add
+        bytes += (@pcm_meta.bitswidth * @pcm_meta.channels) - mod
+        @mod_handling_method = :sub
+      elsif @mod_handling_method == :sub
+        bytes -= mod
+        @mod_handling_method = :add
+      end
+      bytes
+    end
+    def flip_mod_handling_method
+      if @mod_handling_method == :add
+        bytes += mod
+      elsif @mod_handling_method == :sub
+        bytes -= mod
+      end
+    end
     def fmt_chunk
       fmt_chunk = "fmt ".encode("ASCII-8BIT")
       fmt_chunk << [16].pack("L")
@@ -61,7 +86,6 @@ module WaveZutaZuta
       fmt_chunk
     end
     def data_chunk
-      @pcm_body.force_encoding("ASCII-8BIT")
       data_chunk = "data".encode("ASCII-8BIT")
       data_chunk << [@pcm_body.length].pack("L")
       data_chunk << @pcm_body
@@ -81,7 +105,11 @@ module WaveZutaZuta
 
     def slice(from, length)
       start_index = from * bytes_for_a_second
-      index_length = length * bytes_for_a_second
+      mod = start_index % @pcm_meta.bitswidth
+      start_index -= mod
+
+      index_length = length * bytes_for_a_second.to_i
+
       @pcm_body[start_index, index_length]
     end
 
