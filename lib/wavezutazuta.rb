@@ -56,10 +56,14 @@ module WaveZutaZuta
     end
 
     private
+    def bytes_for_a_sample
+      @pcm_meta.bitswidth * @pcm_meta.channels / 8
+    end
+
     def handle_mod(bytes)
-      mod = bytes % (@pcm_meta.bitswidth * @pcm_meta.channels)
+      mod = bytes % bytes_for_a_sample
       if @mod_handling_method == :add
-        bytes += (@pcm_meta.bitswidth * @pcm_meta.channels) - mod
+        bytes += bytes_for_a_sample - mod
         @mod_handling_method = :sub
       elsif @mod_handling_method == :sub
         bytes -= mod
@@ -69,9 +73,9 @@ module WaveZutaZuta
     end
     def flip_mod_handling_method
       if @mod_handling_method == :add
-        bytes += mod
+        @mod_handling_method = :sub
       elsif @mod_handling_method == :sub
-        bytes -= mod
+        @mod_handling_method = :add
       end
     end
     def fmt_chunk

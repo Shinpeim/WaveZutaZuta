@@ -7,6 +7,8 @@ spec_dir = File.dirname(__FILE__)
 describe WaveZutaZuta::Sampler do
   let :wave do WaveZutaZuta::Wave.new(File.join(spec_dir, "resouces", "8bit_toy_box.wav")) end
   let :sampler do WaveZutaZuta::Sampler.new(wave.pcm_meta, 120) end
+  let :bytes_for_a_sample do wave.pcm_meta.bitswidth * wave.pcm_meta.channels / 8 end
+  let :bytes_for_a_second do bytes_for_a_sample * wave.pcm_meta.samplerate end
 
   context "sound に1秒間のリニアPCMデータをセットしたとき" do
     before do
@@ -18,8 +20,8 @@ describe WaveZutaZuta::Sampler do
         sampler.play_sound(:sound_1, 16)
       end
       it "pcm_bodyのサイズが0.5秒分のサイズであること" do
-        sampler.instance_variable_get(:"@pcm_body").size.
-          should be_within(wave.pcm_meta.bitswidth * wave.pcm_meta.channels).of(88200)
+        sampler.instance_variable_get(:"@pcm_body").force_encoding("ASCII-8BIT").size.
+          should be_within(bytes_for_a_sample).of(bytes_for_a_second / 2)
       end
       context "さらに休符を4分音符分鳴らしたとき" do
         before do
@@ -27,7 +29,7 @@ describe WaveZutaZuta::Sampler do
         end
         it "pcm_bodyのサイズが1秒分のサイズであること" do
           sampler.instance_variable_get(:"@pcm_body").size.
-            should be_within(wave.pcm_meta.bitswidth * wave.pcm_meta.channels).of(176400)
+            should be_within(bytes_for_a_sample).of(bytes_for_a_second)
         end
         context "waveとして見たとき" do
           it "waveデータが期待したものであること" do
