@@ -28,8 +28,14 @@ module WaveZutaZuta
       bytes = bytes_for_1_64_note * size
       bytes = handle_mod(bytes)
 
-      pcm = @sounds[key][0,bytes]
-      @pcm_body << pcm
+      if bytes > @sounds[key].length
+        # サンプリングした分で足りない分を0で埋める
+        @pcm_body << @sounds[key]
+        @pcm_body << "\x00" * (bytes - @sounds[key].length)
+      else
+        @pcm_body << @sounds[key][0,bytes]
+      end
+
       @pcm_body.force_encoding("ASCII-8BIT")
       self
     end

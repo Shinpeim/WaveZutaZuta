@@ -15,6 +15,15 @@ describe WaveZutaZuta::Sampler do
       path = File.join(spec_dir, "resouces", "sliced_pcm.pcm")
       sampler.set_sound(:sound_1, IO.read(path, File.stat(path).size))
     end
+    context "soundを1小節分(2秒分)鳴らしたとき" do
+      before do
+        sampler.play_sound(:sound_1,16 * 4)
+      end
+      it "pcm_bodyのサイズが2秒分のサイズであること" do
+        sampler.instance_variable_get(:"@pcm_body").size.
+          should be_within(wave.pcm_meta.bitswidth * wave.pcm_meta.channels).of(wave.pcm_meta.samplerate * wave.pcm_meta.channels * wave.pcm_meta.bitswidth / 8 * 2)
+      end
+    end
     context "soundを4分音符鳴らしたとき" do
       before do
         sampler.play_sound(:sound_1, 16)
