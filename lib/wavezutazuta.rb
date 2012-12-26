@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
 require "hashie"
 module WaveZutaZuta
+  module PcmMetaHandling
+    private
+    def bytes_for_a_sample
+      @pcm_meta.bitswidth * @pcm_meta.channels / 8
+    end
+    def bytes_for_a_second
+      bytes_for_a_sample * @pcm_meta.samplerate
+    end
+  end
   class Sampler
+    include PcmMetaHandling
     def initialize(pcm_meta, bpm)
       @pcm_meta = pcm_meta
       @bpm = bpm
@@ -62,10 +72,6 @@ module WaveZutaZuta
     end
 
     private
-    def bytes_for_a_sample
-      @pcm_meta.bitswidth * @pcm_meta.channels / 8
-    end
-
     def handle_mod(bytes)
       mod = bytes % bytes_for_a_sample
       if @mod_handling_method == :add
@@ -105,6 +111,7 @@ module WaveZutaZuta
   class Wave
     class NotWaveData < StandardError; end
     class NotLinearPCMWave < StandardError; end
+    include PcmMetaHandling
 
     attr_reader :pcm_meta
     def initialize(file_path)
@@ -123,14 +130,21 @@ module WaveZutaZuta
       @pcm_body[start_index, index_length]
     end
 
+    def sample(from, length)
+      start_index = from * bytes_for_a_sample
+      index_length = length * bytes_for_a_sample
+      @pcm_body[start_index, index_length]
+    end
+
     def length
       @pcm_body.length / bytes_for_a_second
     end
 
-    private
-    def bytes_for_a_second
-      @pcm_meta.bitswidth * @pcm_meta.samplerate * @pcm_meta.channels / 8
+    def number_of_sample
+      @pcm_body.length / bytes_for_a_sample
     end
+
+    private
     def parse(f)
       riff_header = f.read(4)
       raise NotWaveData, "data is not RIFF format" unless riff_header == "RIFF"

@@ -28,6 +28,16 @@ describe WaveZutaZuta::Wave do
     it "秒数を取得できること" do
       wave_data.length.should == 205
     end
+    describe "#sample" do
+      context "40個目のsampleから10個ぶん取ってきたとき" do
+        it "サイズが16(bitwidth) * 2(channel) / 8 * 10 であること" do
+          wave_data.sample(40, 10).length.should == 16 * 2 / 8 * 10
+        end
+        it "ASCII-8BITとして扱われていること" do
+          wave_data.slice(30, 1).encoding.should == Encoding.find("ASCII-8BIT")
+        end
+      end
+    end
     describe "#slice" do
       context "30秒目から1秒間のPCMデータをスライスしたとき" do
         it "サイズが 44100(samplerate) * 16(bitwidth) * 2(channel) / 8 bytesであること" do
