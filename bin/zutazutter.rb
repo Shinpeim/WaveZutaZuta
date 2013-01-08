@@ -26,9 +26,13 @@ def load_score_file(path)
   score_array.reduce([]){|result, item|
     case item
     when *"a".."z"
-      result.push({:sound => item, :length => 1})
+      result.push({:sound => :play, :note => item, :length => 1})
+    when *"A".."Z"
+      result.push({:sound => :reversed, :note => item.downcase, :length => 1})
     when "*"
-      result.push({:sound => [*"a".."z"].sample, :length => 1})
+      result.push({:sound => :play, :note => [*"a".."z"].sample, :length => 1})
+    when "/"
+      result.push({:sound => :reversed, :note => [*"a".."z"].sample, :length => 1})
     when "0"
       result.push({:sound => :rest, :length => 1})
     when "-"
@@ -51,8 +55,12 @@ score_data = load_score_file(score_file)
 score_data.each do |note|
   if note[:sound] == :rest
     sampler.play_rest(note[:length])
+  elsif note[:sound] == :play
+    sampler.play_sound(note[:note], note[:length])
+  elsif note[:sound] == :reversed
+    sampler.play_reversed(note[:note], note[:length])
   else
-    sampler.play_sound(note[:sound], note[:length])
+    raise "invalid sound type : #{note[:sound]}"
   end
 end
 

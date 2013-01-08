@@ -10,6 +10,7 @@ module WaveZutaZuta
       bytes_for_a_sample * @pcm_meta.samplerate
     end
   end
+
   class Sampler
     include PcmMetaHandling
     def initialize(pcm_meta, bpm)
@@ -40,8 +41,8 @@ module WaveZutaZuta
 
       if bytes > @sounds[key].length
         # サンプリングした分で足りない分を0で埋める
-        @pcm_body << @sounds[key]
         @pcm_body << "\x00" * (bytes - @sounds[key].length)
+        @pcm_body << reverse_pcm(@sounds[key])
       else
         @pcm_body << @sounds[key][0,bytes]
       end
@@ -49,6 +50,23 @@ module WaveZutaZuta
       @pcm_body.force_encoding("ASCII-8BIT")
       self
     end
+
+    def play_reversed(key,size)
+      bytes = bytes_for_1_64_note * size
+      bytes = handle_mod(bytes)
+
+      if bytes > @sounds[key].length
+        # サンプリングした分で足りない分を0で埋める
+        @pcm_body << "\x00" * (bytes - @sounds[key].length)
+        @pcm_body << reverse_pcm(@sounds[key])
+      else
+        @pcm_body << reverse_pcm(@sounds[key][0,bytes])
+      end
+
+      @pcm_body.force_encoding("ASCII-8BIT")
+      self
+    end
+
     def play_rest(size)
       bytes = bytes_for_1_64_note * size
       bytes = handle_mod(bytes)
@@ -105,6 +123,15 @@ module WaveZutaZuta
       data_chunk = "data".encode("ASCII-8BIT")
       data_chunk << [@pcm_body.length].pack("L")
       data_chunk << @pcm_body
+    end
+    def reverse_pcm(pcm)
+      index = 0
+      samples = []
+      while(index < pcm.length)
+        samples.push pcm[index, 2]
+        index += 2
+      end
+      samples.reverse.join
     end
   end
 
