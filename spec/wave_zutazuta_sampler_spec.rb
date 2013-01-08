@@ -24,6 +24,24 @@ describe WaveZutaZuta::Sampler do
           should be_within(wave.pcm_meta.bitswidth * wave.pcm_meta.channels).of(wave.pcm_meta.samplerate * wave.pcm_meta.channels * wave.pcm_meta.bitswidth / 8 * 2)
       end
     end
+    context "soundを逆再生で4分音符分鳴らしたとき" do
+      before do
+        sampler.play_reversed(:sound_1, 16)
+      end
+      it "pcm_bodyのサイズが0.5秒分のサイズであること" do
+        sampler.instance_variable_get(:"@pcm_body").force_encoding("ASCII-8BIT").size.
+          should be_within(bytes_for_a_sample).of(bytes_for_a_second / 2)
+      end
+    end
+    context "soundを逆再生で1小節分鳴らしたとき" do
+      before do
+        sampler.play_reversed(:sound_1, 16 * 4)
+      end
+      it "pcm_bodyのサイズが2秒分のサイズであること" do
+        sampler.instance_variable_get(:"@pcm_body").force_encoding("ASCII-8BIT").size.
+          should be_within(bytes_for_a_sample).of(bytes_for_a_second * 2)
+      end
+    end
     context "soundを4分音符鳴らしたとき" do
       before do
         sampler.play_sound(:sound_1, 16)
