@@ -20,7 +20,7 @@ module WaveZutaZuta
       @pcm_meta = pcm_meta
       @bpm = bpm
       @sounds = {}
-      @pcm_body = "".encode("ASCII-8BIT")
+      @pcm_body = ""
       @mod_handling_method = :add
     end
 
@@ -47,7 +47,6 @@ module WaveZutaZuta
       else
         @pcm_body << @sounds[key][0,bytes_length]
       end
-      @pcm_body.force_encoding("ASCII-8BIT")
 
       self
     end
@@ -78,9 +77,9 @@ module WaveZutaZuta
     def to_wave
       data_size = fmt_chunk.length + data_chunk.length + 4
 
-      wave_data = "RIFF".encode("ASCII-8BIT")
+      wave_data = "RIFF"
       wave_data << [data_size].pack("L")
-      wave_data << "WAVE".encode("ASCII-8BIT")
+      wave_data << "WAVE"
       wave_data << fmt_chunk
       wave_data << data_chunk
       wave_data
@@ -100,7 +99,7 @@ module WaveZutaZuta
     end
 
     def fmt_chunk
-      fmt_chunk = "fmt ".encode("ASCII-8BIT")
+      fmt_chunk = "fmt "
       fmt_chunk << [16].pack("L")
       fmt_chunk << @pcm_meta.format
       fmt_chunk << [@pcm_meta.channels].pack("S")
@@ -112,7 +111,7 @@ module WaveZutaZuta
     end
 
     def data_chunk
-      data_chunk = "data".encode("ASCII-8BIT")
+      data_chunk = "data"
       data_chunk << [@pcm_body.length].pack("L")
       data_chunk << @pcm_body
       data_chunk
