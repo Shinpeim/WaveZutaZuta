@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 require "hashie"
 module WaveZutaZuta
-  module PcmMetaHandling
-    private
-    def bytes_for_a_sample
-      @pcm_meta.bitswidth * @pcm_meta.channels / 8
+  class PcmMeta < Hashie::Mash
+    def bytes_length_for_a_sample
+      bitswidth * channels / 8
     end
-    def bytes_for_a_second
-      bytes_for_a_sample * @pcm_meta.samplerate
+    def bytes_length_for_a_second
+      bytes_length_for_a_sample * samplerate
+    end
+    def bytes_length_for_n_seconds n
+      bytes_length_for_a_sample * samplerate * n
     end
   end
 
   class Sampler
-    include PcmMetaHandling
     def initialize(pcm_meta, bpm)
       @pcm_meta = pcm_meta
       @bpm = bpm
@@ -25,26 +26,24 @@ module WaveZutaZuta
       @sounds[key] = pcm_data
     end
 
-    def bytes_for_1_64_note
-      @bytes_for_1_64_note ||= lambda {
+    def bytes_length_for_1_64_note
+      @bytes_length_for_1_64_note ||= lambda {
         seconds_of_quater_note = 60.0 / @bpm.to_f
         seconds_of_1_64_note = seconds_of_quater_note / 16.0
-        bits_for_1_64_note = @pcm_meta.bitswidth * @pcm_meta.samplerate * @pcm_meta.channels * seconds_of_1_64_note
-        bytes_for_1_64_note = bits_for_1_64_note / 8.0
+        @pcm_meta.bytes_length_for_n_seconds(seconds_of_1_64_note)
       }.call
     end
 
     # size は 64分音符いくつ分ならすか
     def play_sound(key, size)
-      bytes = bytes_for_1_64_note * size
-      bytes = handle_mod(bytes)
+      bytes_length = adjust(bytes_length_for_1_64_note * size)
 
-      if bytes > @sounds[key].length
+      if bytes_length > @sounds[key].length
         # サンプリングした分で足りない分を0で埋める
-        @pcm_body << "\x00" * (bytes - @sounds[key].length)
+        @pcm_body << "\x00" * (bytes_length - @sounds[key].length)
         @pcm_body << reverse_pcm(@sounds[key])
       else
-        @pcm_body << @sounds[key][0,bytes]
+        @pcm_body << @sounds[key][0,bytes_length]
       end
 
       @pcm_body.force_encoding("ASCII-8BIT")
@@ -52,15 +51,14 @@ module WaveZutaZuta
     end
 
     def play_reversed(key,size)
-      bytes = bytes_for_1_64_note * size
-      bytes = handle_mod(bytes)
+      bytes_length = adjust(bytes_length_for_1_64_note * size)
 
-      if bytes > @sounds[key].length
+      if bytes_length > @sounds[key].length
         # サンプリングした分で足りない分を0で埋める
-        @pcm_body << "\x00" * (bytes - @sounds[key].length)
+        @pcm_body << "\x00" * (bytes_length - @sounds[key].length)
         @pcm_body << reverse_pcm(@sounds[key])
       else
-        @pcm_body << reverse_pcm(@sounds[key][0,bytes])
+        @pcm_body << reverse_pcm(@sounds[key][0,bytes_length])
       end
 
       @pcm_body.force_encoding("ASCII-8BIT")
@@ -68,10 +66,9 @@ module WaveZutaZuta
     end
 
     def play_rest(size)
-      bytes = bytes_for_1_64_note * size
-      bytes = handle_mod(bytes)
+      bytes_length = adjust(bytes_length_for_1_64_note * size)
 
-      pcm = Array.new(bytes){0}.pack("C*")
+      pcm = Array.new(bytes_length){0}.pack("C*")
       @pcm_body << pcm
       @pcm_body.force_encoding("ASCII-8BIT")
       self
@@ -90,24 +87,18 @@ module WaveZutaZuta
     end
 
     private
-    def handle_mod(bytes)
-      mod = bytes % bytes_for_a_sample
+    def adjust(bytes_length)
+      mod = bytes_length % @pcm_meta.bytes_length_for_a_sample
       if @mod_handling_method == :add
-        bytes += bytes_for_a_sample - mod
+        bytes_length += @pcm_meta.bytes_length_for_a_sample - mod
         @mod_handling_method = :sub
       elsif @mod_handling_method == :sub
-        bytes -= mod
+        bytes_length -= mod
         @mod_handling_method = :add
       end
-      bytes
+      bytes_length
     end
-    def flip_mod_handling_method
-      if @mod_handling_method == :add
-        @mod_handling_method = :sub
-      elsif @mod_handling_method == :sub
-        @mod_handling_method = :add
-      end
-    end
+
     def fmt_chunk
       fmt_chunk = "fmt ".encode("ASCII-8BIT")
       fmt_chunk << [16].pack("L")
@@ -119,11 +110,13 @@ module WaveZutaZuta
       fmt_chunk << [@pcm_meta.bitswidth].pack("S")
       fmt_chunk
     end
+
     def data_chunk
       data_chunk = "data".encode("ASCII-8BIT")
       data_chunk << [@pcm_body.length].pack("L")
       data_chunk << @pcm_body
     end
+
     def reverse_pcm(pcm)
       index = 0
       samples = []
@@ -138,7 +131,6 @@ module WaveZutaZuta
   class Wave
     class NotWaveData < StandardError; end
     class NotLinearPCMWave < StandardError; end
-    include PcmMetaHandling
 
     attr_reader :pcm_meta
     def initialize(file_path)
@@ -148,27 +140,27 @@ module WaveZutaZuta
     end
 
     def slice(from, length)
-      start_index = from * bytes_for_a_second
+      start_index = from * @pcm_meta.bytes_length_for_a_second
       mod = start_index % @pcm_meta.bitswidth
       start_index -= mod
 
-      index_length = length * bytes_for_a_second.to_i
+      index_length = length * @pcm_meta.bytes_length_for_a_second.to_i
 
       @pcm_body[start_index, index_length]
     end
 
     def sample(from, length)
-      start_index = from * bytes_for_a_sample
-      index_length = length * bytes_for_a_sample
+      start_index = from * @pcm_meta.bytes_length_for_a_sample
+      index_length = length * @pcm_meta.bytes_length_for_a_sample
       @pcm_body[start_index, index_length]
     end
 
     def length
-      @pcm_body.length / bytes_for_a_second
+      @pcm_body.length / @pcm_meta.bytes_length_for_a_second
     end
 
     def number_of_sample
-      @pcm_body.length / bytes_for_a_sample
+      @pcm_body.length / @pcm_meta.bytes_length_for_a_sample
     end
 
     private
@@ -200,7 +192,7 @@ module WaveZutaZuta
       size = f.read(4).unpack("L")[0]
       raise NotLinearPCMWave, "invalid fmt chunk size" unless size == 16
 
-      @pcm_meta = Hashie::Mash.new(
+      @pcm_meta = PcmMeta.new(
         :format => f.read(2),
         :channels => f.read(2).unpack("S")[0],
         :samplerate => f.read(4).unpack("L")[0],
