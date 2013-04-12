@@ -5,9 +5,11 @@ module WaveZutaZuta
     def bytes_length_for_a_sample
       bitswidth * channels / 8
     end
+
     def bytes_length_for_a_second
       bytes_length_for_a_sample * samplerate
     end
+
     def bytes_length_for_n_seconds n
       bytes_length_for_a_sample * samplerate * n
     end
@@ -45,8 +47,8 @@ module WaveZutaZuta
       else
         @pcm_body << @sounds[key][0,bytes_length]
       end
-
       @pcm_body.force_encoding("ASCII-8BIT")
+
       self
     end
 
@@ -61,7 +63,6 @@ module WaveZutaZuta
         @pcm_body << reverse_pcm(@sounds[key][0,bytes_length])
       end
 
-      @pcm_body
       self
     end
 
@@ -70,7 +71,7 @@ module WaveZutaZuta
 
       pcm = Array.new(bytes_length){0}.pack("C*")
       @pcm_body << pcm
-      @pcm_body
+
       self
     end
 
@@ -82,7 +83,6 @@ module WaveZutaZuta
       wave_data << "WAVE".encode("ASCII-8BIT")
       wave_data << fmt_chunk
       wave_data << data_chunk
-      wave_data
       wave_data
     end
 
@@ -115,6 +115,7 @@ module WaveZutaZuta
       data_chunk = "data".encode("ASCII-8BIT")
       data_chunk << [@pcm_body.length].pack("L")
       data_chunk << @pcm_body
+      data_chunk
     end
 
     def reverse_pcm(pcm)
@@ -201,10 +202,12 @@ module WaveZutaZuta
         :bitswidth => f.read(2).unpack("S")[0],
       )
     end
+
     def parse_data_chunk(f)
       size = f.read(4).unpack("L")[0]
       @pcm_body = f.read(size)
     end
+
     def skip_chunk(f)
       size = f.read(4).unpack("L")[0]
       f.seek(size, IO::SEEK_CUR)
