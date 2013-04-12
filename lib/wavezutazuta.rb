@@ -61,7 +61,7 @@ module WaveZutaZuta
         @pcm_body << reverse_pcm(@sounds[key][0,bytes_length])
       end
 
-      @pcm_body.force_encoding("ASCII-8BIT")
+      @pcm_body
       self
     end
 
@@ -70,7 +70,7 @@ module WaveZutaZuta
 
       pcm = Array.new(bytes_length){0}.pack("C*")
       @pcm_body << pcm
-      @pcm_body.force_encoding("ASCII-8BIT")
+      @pcm_body
       self
     end
 
@@ -82,7 +82,7 @@ module WaveZutaZuta
       wave_data << "WAVE".encode("ASCII-8BIT")
       wave_data << fmt_chunk
       wave_data << data_chunk
-      wave_data.force_encoding("ASCII-8BIT")
+      wave_data
       wave_data
     end
 
