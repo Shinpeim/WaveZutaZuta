@@ -21,7 +21,6 @@ module WaveZutaZuta
       @bpm = bpm
       @sounds = {}
       @pcm_body = ""
-      @mod_handling_method = :add
     end
 
     def set_sound(key, pcm_data)
@@ -87,6 +86,8 @@ module WaveZutaZuta
 
     private
     def adjust(bytes_length)
+      @mod_handling_method ||= :add
+
       mod = bytes_length % @pcm_meta.bytes_length_for_a_sample
       if @mod_handling_method == :add
         bytes_length += @pcm_meta.bytes_length_for_a_sample - mod
@@ -121,8 +122,8 @@ module WaveZutaZuta
       index = 0
       samples = []
       while(index < pcm.length)
-        samples.push pcm[index, 2]
-        index += 2
+        samples.push pcm[index, @pcm_meta.bytes_length_for_a_sample]
+        index += @pcm_meta.bytes_length_for_a_sample
       end
       samples.reverse.join
     end
@@ -133,6 +134,7 @@ module WaveZutaZuta
     class NotLinearPCMWave < StandardError; end
 
     attr_reader :pcm_meta
+
     def initialize(file_path)
       f = File.open(file_path, "r").binmode
       parse(f)
