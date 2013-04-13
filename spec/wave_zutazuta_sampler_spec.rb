@@ -11,17 +11,24 @@ describe WaveZutaZuta::Sampler do
   let :bytes_for_a_second do bytes_for_a_sample * wave.pcm_meta.samplerate end
 
   context "sound に1秒間のリニアPCMデータをセットしたとき" do
-    before do
+    let (:pcm_data) {
       path = File.join(spec_dir, "resouces", "sliced_pcm.pcm")
-      sampler.set_sound(:sound_1, IO.read(path, File.stat(path).size))
+      IO.read(path, File.stat(path).size)
+    }
+    before do
+      sampler.set_sound(:sound_1, pcm_data)
     end
     context "soundを1小節分(2秒分)鳴らしたとき" do
       before do
         sampler.play_sound(:sound_1,16 * 4)
+        @pcm_body = sampler.instance_variable_get(:"@pcm_body")
       end
       it "pcm_bodyのサイズが2秒分のサイズであること" do
-        sampler.instance_variable_get(:"@pcm_body").size.
+        @pcm_body.size.
           should be_within(wave.pcm_meta.bitswidth * wave.pcm_meta.channels).of(wave.pcm_meta.samplerate * wave.pcm_meta.channels * wave.pcm_meta.bitswidth / 8 * 2)
+      end
+      it "pcm_bodyの後半のsampleの内容が\x00であること" do
+        @pcm_body[-2].should == "\x00"
       end
     end
     context "soundを逆再生で4分音符分鳴らしたとき" do

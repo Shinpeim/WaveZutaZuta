@@ -41,8 +41,8 @@ module WaveZutaZuta
 
       if bytes_length > @sounds[key].length
         # サンプリングした分で足りない分を0で埋める
+        @pcm_body << @sounds[key]
         @pcm_body << "\x00" * (bytes_length - @sounds[key].length)
-        @pcm_body << reverse_pcm(@sounds[key])
       else
         @pcm_body << @sounds[key][0,bytes_length]
       end
