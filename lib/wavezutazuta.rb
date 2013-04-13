@@ -93,15 +93,15 @@ module WaveZutaZuta
 
     private
     def adjust(bytes_length)
-      @mod_handling_method ||= :add
+      @adjust_methods ||= [:add,:sub].cycle
+
+      adjust_method = @adjust_methods.next
 
       mod = bytes_length % @pcm_meta.bytes_length_for_a_sample
-      if @mod_handling_method == :add
+      if adjust_method == :add
         bytes_length += @pcm_meta.bytes_length_for_a_sample - mod
-        @mod_handling_method = :sub
-      elsif @mod_handling_method == :sub
+      elsif adjust_method == :sub
         bytes_length -= mod
-        @mod_handling_method = :add
       end
       bytes_length
     end
