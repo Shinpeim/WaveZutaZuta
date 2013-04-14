@@ -9,7 +9,7 @@ end
 
 def setup_sampler(bpm, wave_file, score_file)
   wave = WaveZutaZuta::Wave.new(wave_file)
-  sampler = WaveZutaZuta::Sampler.new(wave.pcm_meta, bpm)
+  sampler = WaveZutaZuta::Sampler::Renderer.new(wave.pcm_meta, bpm)
 
   sound_slots = [*"a".."z"]
   sound_slots.each do |e|

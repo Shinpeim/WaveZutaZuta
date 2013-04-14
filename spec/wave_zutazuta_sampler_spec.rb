@@ -4,9 +4,9 @@ require "base64"
 require "wavezutazuta.rb"
 spec_dir = File.dirname(__FILE__)
 
-describe WaveZutaZuta::Sampler do
+describe WaveZutaZuta::Sampler::Renderer do
   let :wave do WaveZutaZuta::Wave.new(File.join(spec_dir, "resouces", "8bit_toy_box.wav")) end
-  let :sampler do WaveZutaZuta::Sampler.new(wave.pcm_meta, 120) end
+  let :sampler do WaveZutaZuta::Sampler::Renderer.new(wave.pcm_meta, 120) end
   let :bytes_for_a_sample do wave.pcm_meta.bitswidth * wave.pcm_meta.channels / 8 end
   let :bytes_for_a_second do bytes_for_a_sample * wave.pcm_meta.samplerate end
 
