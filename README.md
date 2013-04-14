@@ -1,15 +1,12 @@
 # これはなんですか
 
-waveファイルをずたずたにして再構築するためのライブラリです。ライブラリ本体のほかに、zutazutter.rbというコマンドが付属しています。
+waveファイルをずたずたにして再構築するためのライブラリです。ライブラリ本体のほかに、waveファイルをかんたんにレンダリングするためのzutazutter.rbというスクリプトと、リアルタイムでプレイするためのplay.rbというスクリプトが付属しています。
 
-# コマンドをためしてみたいです
+# zutazutter.rb
 
-    $ git clone git://github.com/Shinpeim/WaveZutaZuta.git
-    $ cd WaveZutaZuta
-    $ bundle install --without test
-    $ bundle exec bin/zutazutter.rb bpm source.wav score.txt > dest.wav
+    $ ruby bin/zutazutter.rb bpm source.wav score.txt > dest.wav
 
-bpmには出力したいテンポ、souce.wavにはずたずたにするwaveファイル、score.txtには楽譜ファイル、dest.wavには出力先のwaveファイル名をそれぞれ指定してください。
+として使用します。bpmには出力したいテンポ、souce.wavにはずたずたにするwaveファイル、score.txtには楽譜ファイル、dest.wavには出力先のwaveファイル名をそれぞれ指定してください。
 
 楽譜ファイルは以下のような感じで記述できます
 
@@ -30,13 +27,31 @@ bpmには出力したいテンポ、souce.wavにはずたずたにするwaveフ�
 
 小文字aからzまでの文字それぞれにずたずたにされたwaveファイルの"破片"がアサインされていて、大文字AからZにはそれぞれの小文字にアサインされた音の逆再生がアサインされています。-は音をのばす(タイ)を意味し、0は休符を意味します。*を指定すると、a-zのうちどれかをランダムで鳴らし、/を指定するとA-Zのどれかをランダムで鳴らします。1文字が64分音符ひとつ分の長さです。空白文字は無視されます。
 
+# play.rb
+
+    $ ruby play.rb sequence_size bpm souce.wav
+
+として使用します。
+
+sequence_size には、シーケンスの大きさ(64分音符いくつぶんのシーケンスを組むか)を指定してください。
+
+実行すると、シーケンサーのセットアップが済んだ状態でpryが立ち上がるので、pryのREPL上で演奏を行います。
+
+sequencer.set_sequence("score_string") でシーケンスをセットします、シーケンスの記法は上記の楽譜ファイルに従います。
+
+sequencer.play を実行することで、シーケンサーの演奏が始まります。sequencer.stop を実行することでシーケンサーの演奏を止めることができます。
+
+演奏中にset_sequence を再度実行することで、音を聞きながらリアルタイムにシーケンスを設定することができるようになっています。
+
+大事なことですが、[ruby-coreaudio](https://github.com/nagachika/ruby-coreaudio)に依存しているため、macでしか動きません。
+
 # ライブラリを使いたいです
 
 ライブラリは入力となるwaveファイルを解析したりずたずたにする部分である WaveZutaZuta::Wave と、サンプラー/waveレンダラーとして振る舞う WaveZutaZuta::Sampler::Renderer に別れています。
 
 # WaveZutaZuta::Wave
 
-## 要約
+## 概要
 
 Waveファイルを解析したりずたずたにできます。
 
@@ -66,7 +81,7 @@ formとlengthは整数値を取ります。waveファイル内のリニアpcmデ
 
 # WaveZutaZuta::Sampler::Renderer
 
-## 要約
+## 概要
 
 pcmデータをサウンドスロットに保持し、サウンドスロットに保持したデータを使ってwaveデータを構築することができます。
 
@@ -113,6 +128,22 @@ keyという名前で保存してあったpcm_dataを内部バッファに書き
 ### to_wave
 
 内部バッファに書き込まれた波形データを、waveのバイナリ表現として返します。
+
+# WaveZutaZuta::Sampler::Player
+
+## 概要
+
+pcmデータをサウンドスロットに保持し、サウンドスロットに保持したデータを使ってリアルタイムにサウンドを鳴らすことができます。[ruby-coreaudio](https://github.com/nagachika/ruby-coreaudio)に依存しているため、macでしか動きません。
+
+    WaveZutaZuta::Sampler::Player.new(pcm_meta, bpm)
+
+として生成できます。pcm_metaには、上述のpcm_metaオブジェクトを渡します。Rendererとほぼ同じインターフェイスですが、to_waveメソッドが存在しません。
+
+# WaveZutaZuta::Sequencer
+
+## 概要
+
+WaveZutaZuta::Sampler::Player を wrap したシーケンサーです。play.rbから使うことを意図しています。
 
 # ライセンス (License)
 MIT License
