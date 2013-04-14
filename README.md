@@ -32,7 +32,7 @@ bpmには出力したいテンポ、souce.wavにはずたずたにするwaveフ�
 
 # ライブラリを使いたいです
 
-ライブラリは入力となるwaveファイルを解析したりずたずたにする部分である WaveZutaZuta::Wave と、サンプラーとして振る舞う WaveZutaZuta.Sampler に別れています。
+ライブラリは入力となるwaveファイルを解析したりずたずたにする部分である WaveZutaZuta::Wave と、サンプラー/waveレンダラーとして振る舞う WaveZutaZuta::Sampler::Renderer に別れています。
 
 # WaveZutaZuta::Wave
 
@@ -64,13 +64,13 @@ formとlengthは整数値を取ります。waveファイル内のリニアpcmデ
 
 formとlengthは整数値を取ります。waveファイル内のリニアpcmデータから、from サンプル目からlengthサンプル数のリニアpcmデータを返します。fromは0始まりです。
 
-# WaveZutaZuta::Sampler
+# WaveZutaZuta::Sampler::Renderer
 
 ## 要約
 
 pcmデータをサウンドスロットに保持し、サウンドスロットに保持したデータを使ってwaveデータを構築することができます。
 
-    WaveZutaZuta::Sampler.new(pcm_meta, bpm)
+    WaveZutaZuta::Sampler::Renderer.new(pcm_meta, bpm)
 
 として生成できます。pcm_metaには、上述のpcm_metaオブジェクトを渡します。
 
