@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
-$LOAD_PATH.push(File.join(File.dirname(File.dirname(__FILE__)), 'lib'))
+root = File.dirname(__FILE__)
+$LOAD_PATH.unshift File.join(root, 'lib')
 require "wavezutazuta.rb"
 
 def help
