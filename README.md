@@ -1,10 +1,10 @@
 # これはなんですか
 
-waveファイルをずたずたにして再構築するためのライブラリです。ライブラリ本体のほかに、waveファイルをかんたんにレンダリングするためのzutazutter.rbというスクリプトと、リアルタイムでプレイするためのplay.rbというスクリプトが付属しています。
+waveファイルをずたずたにして再構築するためのライブラリです。ライブラリ本体のほかに、waveファイルをかんたんにレンダリングするための render.rb というスクリプトと、リアルタイムでプレイするための play.rb というスクリプトが付属しています。
 
-# zutazutter.rb
+# render.rb
 
-    $ ruby bin/zutazutter.rb bpm source.wav score.txt > dest.wav
+    $ ruby render.rb bpm source.wav score.txt > dest.wav
 
 として使用します。bpmには出力したいテンポ、souce.wavにはずたずたにするwaveファイル、score.txtには楽譜ファイル、dest.wavには出力先のwaveファイル名をそれぞれ指定してください。
 
