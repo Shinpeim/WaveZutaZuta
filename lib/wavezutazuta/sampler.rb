@@ -64,6 +64,10 @@ module WaveZutaZuta
       self
     end
 
+    def inspect
+      "<#{self.class} #{self.id}>"
+    end
+
     private
     def play_pcm
       raise "abstruct method";
