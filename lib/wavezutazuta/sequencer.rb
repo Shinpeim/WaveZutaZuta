@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
 require "wavezutazuta/sampler/player"
 
 module WaveZutaZuta
   class Sequencer
-    def initialize(sequence_size, bpm, wave_file)
-      @sequence_size = sequence_size
-      @sequence_notes = [:sound => :rest, :length => sequence_size]
+    def initialize(bpm, wave_file)
+      @sequence_notes = [:sound => :rest, :length => 64] # default は4拍の休符
       @sampler = setup_sampler(bpm, wave_file)
     end
 
@@ -55,7 +55,6 @@ module WaveZutaZuta
     private
     def parse_sequence_string(str)
       str.gsub!(/[\s]/,"")
-      raise "sequence size not matched" unless str.length == @sequence_size
       str.split('').reduce([]){|result, item|
         case item
         when *"a".."z"

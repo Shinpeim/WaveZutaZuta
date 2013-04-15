@@ -29,17 +29,14 @@ waveファイルをずたずたにして再構築するためのライブラリ�
 
 # play.rb
 
-    $ ruby play.rb sequence_size bpm souce.wav
+    $ ruby play.rb bpm souce.wav
 
 として使用します。
+実行すると、sという変数にセットアップ済みのシーケンサーが代入された状態で pry が立ち上がるので、pry の REPL 上で演奏を行います。
 
-sequence_size には、シーケンスの大きさ(64分音符いくつぶんのシーケンスを組むか)を指定してください。
+s.set_sequence("score_string") でシーケンスをセットします、score_string の記法は上記の楽譜ファイルに従います。
 
-実行すると、シーケンサーのセットアップが済んだ状態でpryが立ち上がるので、pryのREPL上で演奏を行います。
-
-sequencer.set_sequence("score_string") でシーケンスをセットします、シーケンスの記法は上記の楽譜ファイルに従います。
-
-sequencer.play を実行することで、シーケンサーの演奏が始まります。sequencer.stop を実行することでシーケンサーの演奏を止めることができます。
+s.play を実行することで、シーケンサーの演奏が始まります。s.stop を実行することでシーケンサーの演奏を止めることができます。
 
 演奏中にset_sequence を再度実行することで、音を聞きながらリアルタイムにシーケンスを設定することができるようになっています。
 
@@ -47,7 +44,7 @@ sequencer.play を実行することで、シーケンサーの演奏が始ま�
 
 # ライブラリを使いたいです
 
-ライブラリは入力となるwaveファイルを解析したりずたずたにする部分である WaveZutaZuta::Wave と、サンプラー/waveレンダラーとして振る舞う WaveZutaZuta::Sampler::Renderer に別れています。
+ライブラリは入力となるwaveファイルを解析したりずたずたにする部分である WaveZutaZuta::Wave と、サンプラー/waveレンダラーとして振る舞う WaveZutaZuta::Sampler::Renderer, リアルタイムプレイ用のサンプラーのクラスWaveZutaZuta::Sampler::Player, シーケンスを組んで演奏するための WaveZutaZuta::Sequencer に別れています。
 
 # WaveZutaZuta::Wave
 
