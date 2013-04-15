@@ -4,8 +4,8 @@ require "wavezutazuta/sampler/player"
 module WaveZutaZuta
   class Sequencer
     def initialize(bpm, wave_file)
-      @sequence_notes = [:sound => :rest, :length => 64] # default は4拍の休符
       @sampler = setup_sampler(bpm, wave_file)
+      @sequence_generator = ->{ "---- ---- ---- ----" }
     end
 
     def setup_sampler(bpm, wave_file)
@@ -20,8 +20,15 @@ module WaveZutaZuta
       sampler
     end
 
-    def set_sequence(str)
-      @sequence_notes = parse_sequence_string(str)
+    def set_sequence(seq)
+      if seq.is_a? String
+        generator = ->{seq}
+      elsif seq.is_a? Proc
+        generator = seq
+      else
+        raise ArgumentError, "sequence must be String or Proc"
+      end
+      @sequence_generator = generator
       self
     end
 
@@ -31,7 +38,8 @@ module WaveZutaZuta
       Thread.new do
         loop do
           while @is_playing
-            sequence = @sequence_notes.clone
+            sequence = parse_sequence_string(@sequence_generator.call)
+
             sequence.each do |note|
               if note[:sound] == :rest
                 @sampler.play_rest(note[:length])

@@ -34,7 +34,13 @@ waveファイルをずたずたにして再構築するためのライブラリ�
 として使用します。
 実行すると、sという変数にセットアップ済みのシーケンサーが代入された状態で pry が立ち上がるので、pry の REPL 上で演奏を行います。
 
-s.set_sequence("score_string") でシーケンスをセットします、score_string の記法は上記の楽譜ファイルに従います。
+s.set_sequence(sequence) でシーケンスをセットします、sequenceには、楽譜文字列そのものか、楽譜文字列を返すラムダを渡すことができます。楽譜文字列の記法は上記の楽譜ファイルに従います。ラムダを渡された場合、シーケンスがループする毎にラムダの内容が評価され、その結果帰った楽譜文字列を演奏することになります。
+
+    # set score string
+    s.set_sequence "a--- ---- ---- 0---"
+    
+    # or set lambda which returns score string
+    s.set_sequence ->{"#{[*"a".."z"].sample}--- ---- ---- 0---"}
 
 s.play を実行することで、シーケンサーの演奏が始まります。s.stop を実行することでシーケンサーの演奏を止めることができます。
 
@@ -42,6 +48,19 @@ s.play を実行することで、シーケンサーの演奏が始まります�
 
 大事なことですが、[ruby-coreaudio](https://github.com/nagachika/ruby-coreaudio)に依存しているため、macでしか動きません。
 
+## テクニック
+
+Rubyのラムダはクロージャになっているため、以下のようなプレイが可能です
+
+    pry > first_note = "a"
+    pry > s.set_sequence ->{"#{first_note}--- ---- ---- 0---  z--- ---- ---- 0---"}
+    pry > s.play
+    pry >
+    pry > first_note = "b" #シーケンスの最初の音が b に変わる
+    pry > first_note = "c" #シーケンスの最初の音が c に変わる
+    
+今回は単純に最初の音を変える例ですが、クロージャにいくつかのパラメータを渡しておいて、演奏中にそのパラメーターをいじることで動的に作曲をしていくみたいなことが可能になっています。
+    
 # ライブラリを使いたいです
 
 ライブラリは入力となるwaveファイルを解析したりずたずたにする部分である WaveZutaZuta::Wave と、サンプラー/waveレンダラーとして振る舞う WaveZutaZuta::Sampler::Renderer, リアルタイムプレイ用のサンプラーのクラスWaveZutaZuta::Sampler::Player, シーケンスを組んで演奏するための WaveZutaZuta::Sequencer に別れています。
