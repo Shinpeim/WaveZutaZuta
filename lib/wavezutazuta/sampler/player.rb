@@ -18,9 +18,9 @@ module WaveZutaZuta
         # samplingrateが41100
         # であることを前提としている
         # とりあえず手元で動くからいいけど動かないシステム,waveもあると思う
-        pcm_samples = pcm_data.unpack("S*")
+        pcm_samples = pcm_data.unpack("s*")
         if @pcm_meta.channels == 2
-          pcm_samples = pcm_samples.each_slice(2).map{ |stereo| stereo.first } #L だけ出す
+          pcm_samples = pcm_samples.each_slice(2).map{ |stereo| stereo.reduce(&:+) / 2 }
         end
 
         wav = NArray.sint(pcm_samples.size)
