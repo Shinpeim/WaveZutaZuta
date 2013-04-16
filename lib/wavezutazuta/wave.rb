@@ -39,7 +39,7 @@ module WaveZutaZuta
     def parse(f)
       riff_header = f.read(4)
       raise NotWaveData, "data is not RIFF format" unless riff_header == "RIFF"
-      size = f.read(4).unpack("L")[0]
+      size = f.read(4).unpack("l")[0]
       format = f.read(4)
       raise NotWaveData, "data is not wave file" unless format == "WAVE"
 
@@ -61,26 +61,26 @@ module WaveZutaZuta
     end
 
     def parse_fmt_chunk(f)
-      size = f.read(4).unpack("L")[0]
+      size = f.read(4).unpack("l")[0]
       raise NotLinearPCMWave, "invalid fmt chunk size" unless size == 16
 
       @pcm_meta = PcmMeta.new(
         :format => f.read(2),
-        :channels => f.read(2).unpack("S")[0],
-        :samplerate => f.read(4).unpack("L")[0],
-        :bytepersec => f.read(4).unpack("L")[0],
-        :blockalign => f.read(2).unpack("S")[0],
-        :bitswidth => f.read(2).unpack("S")[0],
+        :channels => f.read(2).unpack("s")[0],
+        :samplerate => f.read(4).unpack("l")[0],
+        :bytepersec => f.read(4).unpack("l")[0],
+        :blockalign => f.read(2).unpack("s")[0],
+        :bitswidth => f.read(2).unpack("s")[0],
       )
     end
 
     def parse_data_chunk(f)
-      size = f.read(4).unpack("L")[0]
+      size = f.read(4).unpack("l")[0]
       @pcm_body = f.read(size)
     end
 
     def skip_chunk(f)
-      size = f.read(4).unpack("L")[0]
+      size = f.read(4).unpack("l")[0]
       f.seek(size, IO::SEEK_CUR)
     end
   end
