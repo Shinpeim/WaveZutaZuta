@@ -4,20 +4,8 @@ require "wavezutazuta/sampler/player"
 module WaveZutaZuta
   class Sequencer
     def initialize(bpm, wave_file)
-      @sampler = setup_sampler(bpm, wave_file)
+      setup_samplers(wave_file, bpm)
       @sequence_generator = ->{ "---- ---- ---- ----" }
-    end
-
-    def setup_sampler(bpm, wave_file)
-      wave = WaveZutaZuta::Wave.new(wave_file)
-      sampler = WaveZutaZuta::Sampler::Player.new(wave.pcm_meta, bpm)
-
-      sound_slots = [*"a".."z"]
-      sound_slots.each do |e|
-        sampler.set_sound(e, wave.slice(rand(wave.length - 1), 1))
-      end
-
-      sampler
     end
 
     def set_sequence(seq)
@@ -36,21 +24,23 @@ module WaveZutaZuta
       return self if @playing_thread
       @is_playing = true
       Thread.new do
-        loop do
-          while @is_playing
-            sequence = parse_sequence_string(@sequence_generator.call)
+        while @is_playing
+          sequence = parse_sequence_string(@sequence_generator.call)
 
-            sequence.each do |note|
-              if note[:sound] == :rest
-                @sampler.play_rest(note[:length])
-              elsif note[:sound] == :play
-                @sampler.play_sound(note[:note], note[:length])
-              elsif note[:sound] == :reversed
-                @sampler.play_reversed(note[:note], note[:length])
-              end
+          sequence.each do |note|
+            if note[:sound] == :rest
+              @play_sampler.play_rest(note[:length])
+              @rec_sampler.play_rest(note[:length]) if @rec_file
+            elsif note[:sound] == :play
+              @play_sampler.play_sound(note[:note], note[:length])
+              @rec_sampler.play_sound(note[:note], note[:length]) if @rec_file
+            elsif note[:sound] == :reversed
+              @play_sampler.play_reversed(note[:note], note[:length])
+              @rec_sampler.play_reversed(note[:note], note[:length]) if @rec_file
             end
           end
         end
+        save
       end
       self
     end
@@ -60,7 +50,25 @@ module WaveZutaZuta
       self
     end
 
+    def rec_file(file_name)
+      @rec_file = file_name
+    end
+
     private
+    def setup_samplers(file, bpm)
+      wave = WaveZutaZuta::Wave.new(file)
+      @play_sampler = WaveZutaZuta::Sampler::Player.new(wave.pcm_meta, bpm)
+      @rec_sampler  = WaveZutaZuta::Sampler::Renderer.new(wave.pcm_meta, bpm)
+
+      sound_slots = [*"a".."z"]
+      sound_slots.each do |slot|
+        pcm = wave.slice(rand(wave.length - 1), 1)
+        [@play_sampler, @rec_sampler].each do |sampler|
+          sampler.set_sound(slot, pcm)
+        end
+      end
+    end
+
     def parse_sequence_string(str)
       str.gsub!(/[\s]/,"")
       str.split('').reduce([]){|result, item|
@@ -82,6 +90,14 @@ module WaveZutaZuta
         end
         result
       }
+    end
+
+    def save
+      wave = @rec_sampler.to_wave
+      File.open(@rec_file, "w") do |f|
+        f.binmode
+        f.write(wave)
+      end
     end
   end
 end

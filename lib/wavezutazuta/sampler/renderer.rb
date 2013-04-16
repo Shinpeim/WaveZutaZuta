@@ -24,7 +24,7 @@ module WaveZutaZuta
         fmt_chunk = "fmt "
         fmt_chunk << [16].pack("l")
         fmt_chunk << @pcm_meta.format
-        fmt_chunk << [@pcm_meta.channels].pack("l")
+        fmt_chunk << [@pcm_meta.channels].pack("s")
         fmt_chunk << [@pcm_meta.samplerate].pack("l")
         fmt_chunk << [@pcm_meta.bytepersec].pack("l")
         fmt_chunk << [@pcm_meta.blockalign].pack("s")

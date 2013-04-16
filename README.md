@@ -46,6 +46,8 @@ s.play を実行することで、シーケンサーの演奏が始まります�
 
 演奏中にset_sequence を再度実行することで、音を聞きながらリアルタイムにシーケンスを設定することができるようになっています。
 
+ちなみに、s.play をする前に s.rec_file(file_name)で録音ファイル(wav)を指定することで、プレイを録音することが可能です。s.stopした段階で書き出されます。
+
 大事なことですが、[ruby-coreaudio](https://github.com/nagachika/ruby-coreaudio)に依存しているため、macでしか動きません。
 
 ## テクニック
