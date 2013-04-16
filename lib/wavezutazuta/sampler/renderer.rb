@@ -1,6 +1,8 @@
 module WaveZutaZuta
-  class Sampler
-    class Renderer < self
+  module Sampler
+    class Renderer
+      include Sampler
+
       def to_wave
         data_size = fmt_chunk.length + data_chunk.length + 4
 

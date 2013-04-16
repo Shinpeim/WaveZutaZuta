@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 module WaveZutaZuta
-  class Sampler
+  module Sampler
     def initialize(pcm_meta, bpm)
       @pcm_meta = pcm_meta
       @bpm = bpm

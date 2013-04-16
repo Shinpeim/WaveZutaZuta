@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 require 'coreaudio'
 module WaveZutaZuta
-  class Sampler
-    class Player < self
+  module Sampler
+    class Player
+      include Sampler
+
       def initialize(*args)
         device = CoreAudio.default_output_device
         @buffer = device.output_buffer(1024)
