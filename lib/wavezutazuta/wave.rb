@@ -13,10 +13,10 @@ module WaveZutaZuta
 
     def slice(from, length)
       start_index = from * @pcm_meta.bytes_length_for_a_second
-      mod = start_index % @pcm_meta.bitswidth
+      mod = start_index % @pcm_meta.bytes_length_for_a_sample
       start_index -= mod
 
-      index_length = length * @pcm_meta.bytes_length_for_a_second.to_i
+      index_length = length * @pcm_meta.bytes_length_for_a_second
 
       @pcm_body[start_index, index_length]
     end
