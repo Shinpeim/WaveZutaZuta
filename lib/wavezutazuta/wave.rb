@@ -62,7 +62,7 @@ module WaveZutaZuta
       raise NotLinearPCMWave, "invalid fmt chunk size" unless size == 16
 
       @pcm_meta = PcmMeta.new(
-        :format => f.read(2),
+        :format => f.read(2).unpack("s")[0],
         :channels => f.read(2).unpack("s")[0],
         :samplerate => f.read(4).unpack("l")[0],
         :bytepersec => f.read(4).unpack("l")[0],
