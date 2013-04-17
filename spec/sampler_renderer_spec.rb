@@ -21,8 +21,19 @@ describe WaveZutaZuta::Sampler::Renderer do
 
     context "then, 1sec saw wave is set to sound :a" do
       before do
-        @saw_wave_1sec = generate_16bit_saw_wave(44100, 2, 1)
-        @sampler.set_sound(:a, @saw_wave_1sec)
+        saw_wave_1sec = generate_16bit_saw_wave(44100, 2, 1)
+        @sampler.set_sound(:a, saw_wave_1sec)
+      end
+
+      context "them play sound :a 0.5 sec(1 beat)" do
+        before do
+          @sampler.play_sound(:a, 16)
+        end
+        it "@pcm_body should equals to 1sec saw wave pcm" do
+          got = @sampler.instance_variable_get(:@pcm_body)
+          expected = generate_16bit_saw_wave(44100, 2, 0.5)
+          Digest::MD5.hexdigest(got).should == Digest::MD5.hexdigest(expected)
+        end
       end
 
       context "then, play sound :a 1 sec(2 beat)" do
@@ -31,18 +42,32 @@ describe WaveZutaZuta::Sampler::Renderer do
         end
         it "@pcm_body should equals to 1sec saw wave pcm" do
           got = @sampler.instance_variable_get(:@pcm_body)
-          Digest::MD5.hexdigest(got).should == Digest::MD5.hexdigest(@saw_wave_1sec)
+          expected = generate_16bit_saw_wave(44100, 2, 1)
+          Digest::MD5.hexdigest(got).should == Digest::MD5.hexdigest(expected)
+        end
+      end
+
+      context "then, play sound :a 2 sec(4 beat)" do
+        before do
+          @sampler.play_sound(:a, 64)
         end
 
-        context "then, play rest 1 sec(2 beat)" do
-          before do
-            @sampler.play_rest(32)
-          end
-          it "@pcm_body should equals to 1sec saw wave pcm" do
-            got = @sampler.instance_variable_get(:@pcm_body)
-            expected = @saw_wave_1sec + generate_no_sound_wave(44100, 2, 1)
-            Digest::MD5.hexdigest(got).should == Digest::MD5.hexdigest(expected)
-          end
+        it "@pcm_body should equals to 1sec saw wave pcm" do
+          got = @sampler.instance_variable_get(:@pcm_body)
+          expected = generate_16bit_saw_wave(44100, 2, 1) + generate_no_sound_wave(44100, 2, 1)
+          Digest::MD5.hexdigest(got).should == Digest::MD5.hexdigest(expected)
+        end
+      end
+
+      context "then, play sound a 1 sec (2 beat) and play rest 1 sec(2 beat)" do
+        before do
+          @sampler.play_sound(:a, 32)
+          @sampler.play_rest(32)
+        end
+        it "@pcm_body should equals to 1sec saw wave pcm" do
+          got = @sampler.instance_variable_get(:@pcm_body)
+          expected = generate_16bit_saw_wave(44100, 2, 1) + generate_no_sound_wave(44100, 2, 1)
+          Digest::MD5.hexdigest(got).should == Digest::MD5.hexdigest(expected)
         end
       end
     end
