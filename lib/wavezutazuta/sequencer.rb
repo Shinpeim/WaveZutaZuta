@@ -4,6 +4,7 @@ require "wavezutazuta/sampler/player"
 module WaveZutaZuta
   class Sequencer
     def initialize(bpm, wave_file)
+      @bpm = bpm
       setup_samplers(wave_file, bpm)
       @sequence_generator = ->{ "---- ---- ---- ----" }
     end
@@ -38,6 +39,7 @@ module WaveZutaZuta
               @play_sampler.play_reversed(note[:note], note[:length])
               @rec_sampler.play_reversed(note[:note], note[:length]) if @rec_file
             end
+            sleep note[:length] * seconds_of_1_64_note
           end
         end
         save
@@ -67,6 +69,13 @@ module WaveZutaZuta
           sampler.set_sound(slot, pcm)
         end
       end
+    end
+
+    def seconds_of_1_64_note
+      @seconds_of_1_64_note ||= ->{
+        seconds_of_quater_note = 60.0 / @bpm.to_f
+        seconds_of_quater_note / 16.0
+      }.call
     end
 
     def parse_sequence_string(str)

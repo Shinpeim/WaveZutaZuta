@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem "pry"
-gem "coreaudio"
+gem "narray"
 
 group :development do
   gem "rspec"
