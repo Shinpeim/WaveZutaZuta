@@ -2,9 +2,19 @@
 
 waveファイルをずたずたにして再構築するためのライブラリです。ライブラリ本体のほかに、waveファイルをかんたんにレンダリングするための render.rb というスクリプトと、リアルタイムでプレイするための play.rb というスクリプトが付属しています。
 
+# インストーアル
+
+音を鳴らす部分にOpenALを利用していて、OpenALに触る部分はC拡張で書かれているため、ビルドが必要です。わたしは手元の mac でしかためしていませんが、OpenALがインストールされていれば Linux とかでも動くと思います。
+
+    $ cd /path/to/wavezutzutz
+    $ bundle install
+    $ bundle excec rake build
+
+でビルドできます。
+
 # render.rb
 
-    $ ruby render.rb bpm source.wav score.txt > dest.wav
+    $ bundle exec ruby render.rb bpm source.wav score.txt > dest.wav
 
 として使用します。bpmには出力したいテンポ、souce.wavにはずたずたにするwaveファイル、score.txtには楽譜ファイル、dest.wavには出力先のwaveファイル名をそれぞれ指定してください。
 
@@ -29,7 +39,7 @@ waveファイルをずたずたにして再構築するためのライブラリ�
 
 # play.rb
 
-    $ ruby play.rb bpm souce.wav
+    $ bundle exec ruby play.rb bpm souce.wav
 
 として使用します。
 実行すると、sという変数にセットアップ済みのシーケンサーが代入された状態で pry が立ち上がるので、pry の REPL 上で演奏を行います。
@@ -47,8 +57,6 @@ s.play を実行することで、シーケンサーの演奏が始まります�
 演奏中にset_sequence を再度実行することで、音を聞きながらリアルタイムにシーケンスを設定することができるようになっています。
 
 ちなみに、s.play をする前に s.rec_file(file_name)で録音ファイル(wav)を指定することで、プレイを録音することが可能です。s.stopした段階で書き出されます。
-
-大事なことですが、[ruby-coreaudio](https://github.com/nagachika/ruby-coreaudio)に依存しているため、macでしか動きません。
 
 ## テクニック
 
@@ -151,7 +159,7 @@ keyという名前で保存してあったpcm_dataを内部バッファに書き
 
 ## 概要
 
-pcmデータをサウンドスロットに保持し、サウンドスロットに保持したデータを使ってリアルタイムにサウンドを鳴らすことができます。[ruby-coreaudio](https://github.com/nagachika/ruby-coreaudio)に依存しているため、macでしか動きません。
+pcmデータをサウンドスロットに保持し、サウンドスロットに保持したデータを使ってリアルタイムにサウンドを鳴らすことができます。
 
     WaveZutaZuta::Sampler::Player.new(pcm_meta, bpm)
 

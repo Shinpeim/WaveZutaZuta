@@ -1,1 +1,6 @@
 Gemfile.lock
+*Makefile
+*.log
+*.o
+*.so
+*.bundle
