@@ -1,7 +1,5 @@
 require 'mkmf'
 
-$CFLAGS << " " << "-ObjC"
-
 if not(have_header('OpenAL/al.h') &&
        have_header('OpenAL/alc.h') &&
        have_library('OpenAL', 'alcOpenDevice'))
@@ -10,7 +8,7 @@ if not(have_header('OpenAL/al.h') &&
   opt = " -framework OpenAL"
   if try_link(src, "-ObjC#{opt}")
     $defs.push(format("-DHAVE_FRAMEWORK_%s", "OpenAL".tr_cpp))
-    $LDFLAGS << " -ObjC" unless /(\A|\s)-ObjC(\s|\z)/ =~ $LDFLAGS
+#    $LDFLAGS << " -ObjC" unless /(\A|\s)-ObjC(\s|\z)/ =~ $LDFLAGS
     $LDFLAGS << opt
   else
     raise "OpenAL not found"
@@ -28,10 +26,6 @@ rescue
   narray_dir = $sitearchdir
 end
 dir_config("narray", narray_dir, narray_dir)
-
-if not(have_header("time.h"))
-  raise "debug"
-end
 
 if not(have_header("narray.h") and have_header("narray_config.h"))
   print <<-EOS
