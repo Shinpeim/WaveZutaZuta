@@ -2,13 +2,13 @@
 
 waveファイルをずたずたにして再構築するためのライブラリです。ライブラリ本体のほかに、waveファイルをかんたんにレンダリングするための render.rb というスクリプトと、リアルタイムでプレイするための play.rb というスクリプトが付属しています。
 
-# インストーアル
+# インストール
 
 音を鳴らす部分にOpenALを利用していて、OpenALに触る部分はC拡張で書かれているため、ビルドが必要です。わたしは手元の mac でしかためしていませんが、OpenALがインストールされていれば Linux とかでも動くと思います。
 
     $ cd /path/to/wavezutzutz
     $ bundle install
-    $ bundle excec rake build
+    $ bundle exec rake build
 
 でビルドできます。
 
