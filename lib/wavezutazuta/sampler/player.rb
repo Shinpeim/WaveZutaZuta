@@ -24,7 +24,7 @@ module WaveZutaZuta
         end
 
         pcm_samples.each_with_index { |s, i| data[i] = s }
-        buf = @al.create_buffer(@pcm_meta.channels, @pcm_meta.bitswidth, @pcm_meta.samplerate, data);
+        buf = @al.create_buffer(@pcm_meta.channels, @pcm_meta.bitswidth, @pcm_meta.samplerate, data)
         buf.play
       end
     end

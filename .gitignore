@@ -4,3 +4,4 @@ Gemfile.lock
 *.o
 *.so
 *.bundle
+vendor

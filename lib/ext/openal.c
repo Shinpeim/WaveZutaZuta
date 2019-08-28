@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdio.h>
 
 #include <ruby.h>
 #include "narray.h"
@@ -67,7 +68,9 @@ void openal_buffer_free(al_buffer_t *al_buffer)
 {
   free(al_buffer->data);
   alDeleteSources(1, &(al_buffer->source));
+  CHECK_AL_ERROR("failed to delete source");
   alDeleteBuffers(1, &(al_buffer->buffer));
+  CHECK_AL_ERROR("failed to delete buffers");
 }
 
 static VALUE

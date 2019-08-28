@@ -55,8 +55,6 @@ module WaveZutaZuta
     end
 
     def play_rest(size)
-      pcm_data = ''
-
       bytes_length = adjust(bytes_length_for_1_64_note * size)
       pcm = Array.new(bytes_length){0}.pack("C*")
       play_pcm(pcm)
@@ -69,7 +67,7 @@ module WaveZutaZuta
     end
 
     private
-    def play_pcm
+    def play_pcm(_)
       raise "abstruct method";
     end
 

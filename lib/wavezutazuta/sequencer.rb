@@ -5,8 +5,12 @@ module WaveZutaZuta
   class Sequencer
     def initialize(bpm, wave_file)
       @bpm = bpm
-      setup_samplers(wave_file, bpm)
       @sequence_generator = ->{ "---- ---- ---- ----" }
+      wave_file = wave_file
+      @wave = WaveZutaZuta::Wave.new(wave_file)
+      @pcms = 26.times.collect do
+        @wave.slice(rand(@wave.length - 1), 1)
+      end
     end
 
     def set_sequence(seq)
@@ -18,13 +22,15 @@ module WaveZutaZuta
         raise ArgumentError, "sequence must be String or Proc"
       end
       @sequence_generator = generator
-      self
+      nil
     end
 
     def play
-      return self if @playing_thread
+      return if @is_playing
+
       @is_playing = true
       Thread.new do
+        setup_samplers
         while @is_playing
           sequence = parse_sequence_string(@sequence_generator.call)
 
@@ -43,32 +49,39 @@ module WaveZutaZuta
           end
         end
         save
+        teardown_samplers
       end
-      self
+
+      nil
     end
 
     def stop
       @is_playing = false
-      self
+      nil
     end
 
     def rec_file(file_name)
       @rec_file = file_name
+      nil
     end
 
     private
-    def setup_samplers(file, bpm)
-      wave = WaveZutaZuta::Wave.new(file)
-      @play_sampler = WaveZutaZuta::Sampler::Player.new(wave.pcm_meta, bpm)
-      @rec_sampler  = WaveZutaZuta::Sampler::Renderer.new(wave.pcm_meta, bpm)
+    def setup_samplers
+      @play_sampler = WaveZutaZuta::Sampler::Player.new(@wave.pcm_meta, @bpm)
+      @rec_sampler  = WaveZutaZuta::Sampler::Renderer.new(@wave.pcm_meta, @bpm)
 
       sound_slots = [*"a".."z"]
-      sound_slots.each do |slot|
-        pcm = wave.slice(rand(wave.length - 1), 1)
+      sound_slots.each_with_index do |slot, i|
+        pcm = @pcms[i]
         [@play_sampler, @rec_sampler].each do |sampler|
           sampler.set_sound(slot, pcm)
         end
       end
+    end
+
+    def teardown_samplers
+      @play_sampler = nil
+      @rec_sampler  = nil
     end
 
     def seconds_of_1_64_note
@@ -102,6 +115,7 @@ module WaveZutaZuta
     end
 
     def save
+      return unless @rec_file
       wave = @rec_sampler.to_wave
       File.open(@rec_file, "w") do |f|
         f.binmode
